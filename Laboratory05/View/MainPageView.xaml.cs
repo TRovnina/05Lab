@@ -5,15 +5,13 @@ using Laboratory05.ViewModel;
 
 namespace Laboratory05.View
 {
-    /// <summary>
-    /// Interaction logic for MainPage.xaml
-    /// </summary>
     public partial class MainPageView : UserControl, INavigatable
     {
         private readonly BasicViewModel _mainPage;
+       
         public MainPageView()
         {
-            InitializeComponent();
+           InitializeComponent();
             _mainPage = new MainPageViewModel();
             DataContext = _mainPage;
         }

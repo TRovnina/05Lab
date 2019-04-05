@@ -26,7 +26,7 @@ namespace Laboratory05
 
         private void InitializeApplication()
         {
-            StationManager.Initialize(new SerializedDataStorage());
+            StationManager.Initialize(new Storage());
             NavigationManager.Instance.Initialize(new NavigationInitialization(this));
             NavigationManager.Instance.Navigate(ViewType.MainPage);
         }

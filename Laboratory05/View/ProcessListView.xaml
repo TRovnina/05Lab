@@ -13,7 +13,8 @@
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}"></DataGridTextColumn>
                 <DataGridTextColumn Header="IsActive" Binding="{Binding IsActive}"></DataGridTextColumn>
                 <DataGridTextColumn Header="CPU %" Binding="{Binding CPU}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Memory %" Binding="{Binding Memory}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Memory Mb" Binding="{Binding Memory}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Memory %" Binding="{Binding MemoryPercent}"></DataGridTextColumn>
                 <DataGridTextColumn Header="Threads" Binding="{Binding Threads}"></DataGridTextColumn>
                 <DataGridTextColumn Header="User" Binding="{Binding User}"></DataGridTextColumn>
                 <DataGridTextColumn Header="Path" Binding="{Binding Path}"></DataGridTextColumn>

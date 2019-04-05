@@ -20,21 +20,7 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
-        <!--<DataGrid Name="DataGrid" Grid.Row="1"  Grid.Column="0" Grid.ColumnSpan="5"  HorizontalAlignment="Stretch" VerticalAlignment="Top" ItemsSource="{Binding Processes, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedProcess, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutoGenerateColumns="False" IsReadOnly="True">
-            <DataGrid.Columns>
-
-                <DataGridTextColumn Header="Id" Binding="{Binding Id}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}"></DataGridTextColumn>
-                <DataGridTextColumn Header="IsActive" Binding="{Binding IsActive}"></DataGridTextColumn>
-                <DataGridTextColumn Header="CPU %" Binding="{Binding CPU}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Memory %" Binding="{Binding Memory}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Threads" Binding="{Binding Threads}"></DataGridTextColumn>
-                <DataGridTextColumn Header="User" Binding="{Binding User}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Path" Binding="{Binding Path}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Start Date" Binding="{Binding Start}"></DataGridTextColumn>
-            </DataGrid.Columns>
-        </DataGrid>-->
-
+        
         <Button Grid.Row="0"  Grid.Column="0" Content="Get Modules" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5" Command="{Binding GetModulesCommand}"/>
         <Button Grid.Row="0"  Grid.Column="1" Content="Get Threads" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5" Command="{Binding GetThreadsCommand}"/>
         <Button Grid.Row="0"  Grid.Column="2" Content="Stop Process" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5" Command="{Binding StopProcessCommand}"/>
@@ -46,6 +32,7 @@
                 <Button Content="By Active" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5" Command="{Binding SortCommand}" CommandParameter="active"/>
                 <Button Content="By CPU" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5" Command="{Binding SortCommand}" CommandParameter="cpu"/>
                 <Button Content="By Memory" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5" Command="{Binding SortCommand}" CommandParameter="memory"/>
+                <Button Content="By Memory Percent" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5" Command="{Binding SortCommand}" CommandParameter="memoryPercent"/>
                 <Button Content="By Threads" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5" Command="{Binding SortCommand}" CommandParameter="threads"/>
                 <Button Content="By Users" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5" Command="{Binding SortCommand}" CommandParameter="user"/>
                 <Button Content="By Path" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5" Command="{Binding SortCommand}" CommandParameter="path"/>
@@ -53,6 +40,6 @@
             </StackPanel>
         </Expander>
 
-        <view:ProcessListView Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="5"  HorizontalAlignment="Stretch" VerticalAlignment="Top" />
+        <view:ProcessListView Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="5"  HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
     </Grid>
 </UserControl>

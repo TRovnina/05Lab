@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
-using Laboratory05.Models;
 using Laboratory05.Tools;
 using Laboratory05.Tools.Manager;
 using Laboratory05.Tools.Navigation;
@@ -12,24 +10,13 @@ namespace Laboratory05.ViewModel
 {
     internal class MainPageViewModel: BasicViewModel
     {
-        //private ObservableCollection<SystemProcess> _processes;
-       // private SystemProcess _selectedProcess;
-
         private ICommand _getModulesCommand;
         private ICommand _getThreadsCommand;
         private ICommand _stopProcessCommand;
         private ICommand _openFolderCommand;
         private ICommand _sortCommand;
-
-        //public ObservableCollection<SystemProcess> Processes
-        //{
-        //    get { return _processes; }
-        //    set
-        //    {
-        //        _processes = value;
-        //        OnPropertyChanged();
-        //    }
-        //}
+        
+        
 
         public ICommand GetModulesCommand
         {
@@ -38,14 +25,9 @@ namespace Laboratory05.ViewModel
 
         private void GetModulesImplementation(object obj)
         {
-            if (StationManager.CurrentProcess == null)
-            {
-                MessageBox.Show("Select something!");
-                return;
-            }
+            if (!IsSelected()) return;
 
-           NavigationManager.Instance.Navigate(ViewType.Modules);
-           // Refresh();
+            NavigationManager.Instance.Navigate(ViewType.Modules);
         }
 
         public ICommand OpenFolderCommand
@@ -55,15 +37,17 @@ namespace Laboratory05.ViewModel
 
         private void OpenFolderImplementation(object obj)
         {
-            if (StationManager.CurrentProcess == null)
+            if (!IsSelected()) return;
+            string path = StationManager.CurrentProcess.Path;
+
+            if (path.Equals(""))
+                Process.Start("c:\\");
+            else
             {
-                MessageBox.Show("Select something!");
-                return;
+                int end = path.LastIndexOf("\\", StringComparison.Ordinal);
+                Process.Start(path.Substring(0, end));
             }
 
-            int end = StationManager.CurrentProcess.Path.LastIndexOf("/");
-            Process.Start(StationManager.CurrentProcess.Path.Substring(0, end));
-            // Refresh();
         }
 
         public ICommand GetThreadsCommand
@@ -73,14 +57,9 @@ namespace Laboratory05.ViewModel
 
         private void GetThreadsImplementation(object obj)
         {
-            if (StationManager.CurrentProcess == null)
-            {
-                MessageBox.Show("Select something!");
-                return;
-            }
+            if (!IsSelected()) return;
 
             NavigationManager.Instance.Navigate(ViewType.Threads);
-            // Refresh();
         }
 
 
@@ -102,25 +81,27 @@ namespace Laboratory05.ViewModel
 
         private void StopProcessImplementation(object obj)
         {
-            if (StationManager.CurrentProcess == null)
-            {
-                MessageBox.Show("Select something!");
-                return;
-            }
-            Process.GetProcessById(StationManager.CurrentProcess.Id).Close();
+            if (!IsSelected()) return;
+
+            Process.GetProcessById(StationManager.CurrentProcess.Id).Kill();
             Refresh();
         }
 
-
-        internal MainPageViewModel()
+        private bool IsSelected()
         {
-           //_processes = new ObservableCollection<SystemProcess>(StationManager.DataStorage.ProcessList);
+            if (StationManager.CurrentProcess == null)
+            {
+                MessageBox.Show("Select something!");
+                return false;
+            }
+
+            return true;
         }
 
+       
         public override void Refresh()
         {
-           // Processes = new ObservableCollection<SystemProcess>(StationManager.DataStorage.ProcessList);
         }
-        
+
     }
 }

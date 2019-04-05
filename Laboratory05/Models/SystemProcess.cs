@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Management;
 
 namespace Laboratory05.Models
 {
-    internal class SystemProcess
+    public class SystemProcess
     {
         #region Fields
         private readonly int _id;
@@ -11,6 +12,7 @@ namespace Laboratory05.Models
         private bool _isActive;
         private double _cpu;
         private double _memory;
+        private double _memoryPercent;
         private int _threads;
         private readonly string _user;
         private readonly string _path;
@@ -36,7 +38,7 @@ namespace Laboratory05.Models
         public bool IsActive
         {
             get { return _isActive; }
-            set
+            private set
             {
                 _isActive = value;
             }
@@ -46,7 +48,7 @@ namespace Laboratory05.Models
         public double CPU
         {
             get { return _cpu; }
-            set
+            private set
             {
                 _cpu = value;
 
@@ -57,9 +59,19 @@ namespace Laboratory05.Models
         public double Memory
         {
             get { return _memory; }
-            set
+            private set
             {
                 _memory = value;
+
+            }
+        }
+
+        public double MemoryPercent
+        {
+            get { return _memoryPercent; }
+            private set
+            {
+                _memoryPercent = value;
 
             }
         }
@@ -68,7 +80,7 @@ namespace Laboratory05.Models
         public int Threads
         {
             get { return _threads; }
-            set
+            private set
             {
                 _threads = value;
             }
@@ -95,7 +107,7 @@ namespace Laboratory05.Models
         public ProcessModuleCollection ModulesCollection
         {
             get { return _modulesCollection; }
-            set
+            private set
             {
                 _modulesCollection = value;
             }
@@ -104,7 +116,7 @@ namespace Laboratory05.Models
         public ProcessThreadCollection ThreadsCollection
         {
             get { return _threadsCollection; }
-            set
+            private set
             {
                 _threadsCollection = value;
             }
@@ -114,54 +126,20 @@ namespace Laboratory05.Models
 
 
         #region Constructors
-
-        //public SystemProcess(int id, string name, double cpu, double memory,  int threads, string user, string path, DateTime start)
-        //{
-        //    _id = id;
-        //    _name = name;
-        //    _isActive = true;
-        //    _cpu = cpu;
-        //    _memory = memory;
-        //    _threads = threads;
-        //    _user = user;
-        //    _path = path;
-        //    _start = start;
-        //}
-
-        public SystemProcess(Process process)
-        {
+        
+       public SystemProcess(Process process)
+       {
             _id = process.Id;
             _name = process.ProcessName;
-            _isActive = process.Responding;
-            _cpu = new PerformanceCounter("Process", "% Processor Time", Name, true).NextValue();
-            _memory = new PerformanceCounter("Process", "Working Set", Name, true).NextValue();
-            _user = process.StartInfo.Environment["USERNAME"];
-            //_path = process.StartInfo.FileName;
-            //_user = process.MachineName;
-            //_path = Path.GetDirectoryName(process);
-
-            try
-            {
-                _threadsCollection = process.Threads;
-                _threads = process.Threads.Count;
-            }
-            catch (Exception)
-            {
-            }
-
-            try{
-                _modulesCollection = process.Modules;
-            }
-            catch (Exception)
-            {
-            }
-
+            _user = GetUser();
+            
             try
             {
                 _path = process.MainModule.FileName;
             }
             catch (Exception)
             {
+                _path = "";
             }
 
             try
@@ -171,7 +149,60 @@ namespace Laboratory05.Models
             catch (Exception)
             {
             }
-        }
+
+            Refresh(process);
+       }
+
+
+       public void Refresh(Process process)
+       {
+           try
+           {
+               IsActive = process.Responding;
+           }
+            catch (Exception)
+           {
+               IsActive = false;
+           }
+
+
+            try
+           {
+               CPU = (double)new PerformanceCounter("Process", "% Processor Time", Name, true).NextValue() / Environment.ProcessorCount;
+           }
+           catch (Exception)
+           {
+               CPU = 0;
+           }
+
+           try
+           {
+               Memory = new PerformanceCounter("Process", "Working Set", Name, true).NextValue() * 0.0001;
+               double computerMemory = new PerformanceCounter("Memory", "Available MBytes").NextValue();
+               MemoryPercent = Memory / computerMemory;
+           }
+           catch (Exception)
+           {
+               Memory = 0;
+           }
+
+           try
+           {
+               ThreadsCollection = process.Threads;
+               Threads = process.Threads.Count;
+           }
+           catch (Exception)
+           {
+           }
+
+           try
+           {
+               ModulesCollection = process.Modules;
+           }
+           catch (Exception)
+           {
+           }
+       }
 
         #endregion
 
@@ -179,6 +210,25 @@ namespace Laboratory05.Models
         public override string ToString()
         {
             return $"{Id} {Name}";
+        }
+
+
+        private string GetUser()
+        {
+            string query = "Select * From Win32_Process Where ProcessID = " + Id;
+            ManagementObjectCollection processList = new ManagementObjectSearcher(query).Get();
+
+            foreach (var o in processList)
+            {
+                var obj = (ManagementObject) o;
+                object[] argList = { string.Empty, string.Empty };
+                int returnVal = Convert.ToInt32(obj.InvokeMethod("GetOwner", argList));
+                if (returnVal == 0)
+                {
+                    return "" + argList[0];
+                }
+            }
+            return "";
         }
 
     }

@@ -4,11 +4,11 @@ using Laboratory05.Models;
 
 namespace Laboratory05.Tools.DataStorage
 {
-    internal class SerializedDataStorage : IDataStorage
+    internal class Storage : IDataStorage
     {
         private List<SystemProcess> _processes;
 
-        internal SerializedDataStorage()
+        internal Storage()
         {
             ProcessList = new List<SystemProcess>();
         }
@@ -40,6 +40,8 @@ namespace Laboratory05.Tools.DataStorage
                 ProcessList = new List<SystemProcess>(_processes.OrderBy(p => p.CPU).ToList());
             else if (parameter.Equals("memory"))
                 ProcessList = new List<SystemProcess>(_processes.OrderBy(p => p.Memory).ToList());
+            else if (parameter.Equals("memoryPercent"))
+                ProcessList = new List<SystemProcess>(_processes.OrderBy(p => p.MemoryPercent).ToList());
             else if (parameter.Equals("threads"))
                 ProcessList = new List<SystemProcess>(_processes.OrderBy(p => p.Threads).ToList());
             else if (parameter.Equals("user"))
