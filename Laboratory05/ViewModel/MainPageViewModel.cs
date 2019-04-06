@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using Laboratory05.Models;
 using Laboratory05.Tools;
 using Laboratory05.Tools.Manager;
 using Laboratory05.Tools.Navigation;
@@ -15,8 +19,54 @@ namespace Laboratory05.ViewModel
         private ICommand _stopProcessCommand;
         private ICommand _openFolderCommand;
         private ICommand _sortCommand;
+
+
+        private ObservableCollection<SystemProcess> _processes;
+        private Thread _workingThread;
+        private Thread _refreshingThread;
+        private readonly CancellationToken _token;
+        private readonly CancellationTokenSource _tokenSource;
         
         
+
+        public MainPageViewModel()
+        {
+            _processes = new ObservableCollection<SystemProcess>(StationManager.DataStorage.ProcessList);
+            _tokenSource = new CancellationTokenSource();
+            _token = _tokenSource.Token;
+            StartWorkingThread();
+            StartRefreshingThread();
+            StationManager.StopThreads += StopWorkingThread;
+            StationManager.StopThreads += StopRefreshingThread;
+        }
+
+
+        public override void Refresh()
+        {
+            Processes = new ObservableCollection<SystemProcess>(StationManager.DataStorage.ProcessList);
+        }
+
+
+        public ObservableCollection<SystemProcess> Processes
+        {
+            get { return _processes; }
+
+            private set
+            {
+                _processes = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public SystemProcess SelectedProcess
+        {
+            set
+            {
+                StationManager.CurrentProcess = value;
+                OnPropertyChanged();
+            }
+        }
+
 
         public ICommand GetModulesCommand
         {
@@ -97,10 +147,102 @@ namespace Laboratory05.ViewModel
 
             return true;
         }
+        
 
-       
-        public override void Refresh()
+        private void StartRefreshingThread()
         {
+            _refreshingThread = new Thread(RefreshingThreadProcess);
+            _refreshingThread.Start();
+        }
+
+        private void StartWorkingThread()
+        {
+            _workingThread = new Thread(WorkingThreadProcess);
+            _workingThread.Start();
+        }
+
+        private void RefreshingThreadProcess()
+        {
+            while (!_token.IsCancellationRequested)
+            {
+                Thread.Sleep(10000);
+                var processes = new List<SystemProcess>(StationManager.DataStorage.ProcessList);
+                LoaderManager.Instance.ShowLoader();
+
+                foreach (SystemProcess process in processes)
+                {
+                    try
+                    {
+                        process.Refresh(Process.GetProcessById(process.Id));
+                    }
+                    catch (Exception)
+                    {
+                        process.Refresh(null);
+                    }
+
+                    if (_token.IsCancellationRequested)
+                        break;
+                }
+
+                if (_token.IsCancellationRequested)
+                    break;
+
+                Processes = new ObservableCollection<SystemProcess>(processes);
+                StationManager.DataStorage.ProcessList = processes;
+               
+                LoaderManager.Instance.HideLoader();
+            }
+        }
+
+        private void WorkingThreadProcess()
+        {
+            while (!_token.IsCancellationRequested)
+            {
+                Thread.Sleep(30000);
+                var processes = new List<SystemProcess>();
+                LoaderManager.Instance.ShowLoader();
+
+                foreach (Process process in Process.GetProcesses())
+                {
+                    SystemProcess sysProcess = StationManager.DataStorage.GetProcessById(process.Id);
+                    if (sysProcess == null)
+                        processes.Add(new SystemProcess(process));
+                    else
+                    {
+                        sysProcess.Refresh(process);
+                        processes.Add(sysProcess);
+                    }
+                    if (_token.IsCancellationRequested)
+                        break;
+                }
+
+                if (_token.IsCancellationRequested)
+                    break;
+                Processes = new ObservableCollection<SystemProcess>(processes);
+                StationManager.DataStorage.ProcessList = processes;
+                if (_token.IsCancellationRequested)
+                    break;
+
+                LoaderManager.Instance.HideLoader();
+            }
+        }
+
+
+        internal void StopWorkingThread()
+        {
+            _tokenSource.Cancel();
+            _workingThread.Join(5000);
+            _workingThread.Abort();
+            _workingThread = null;
+        }
+
+
+        internal void StopRefreshingThread()
+        {
+            _tokenSource.Cancel();
+            _refreshingThread.Join(2000);
+            _refreshingThread.Abort();
+            _refreshingThread = null;
         }
 
     }
