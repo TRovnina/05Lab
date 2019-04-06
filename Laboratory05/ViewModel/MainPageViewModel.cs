@@ -132,8 +132,14 @@ namespace Laboratory05.ViewModel
         private void StopProcessImplementation(object obj)
         {
             if (!IsSelected()) return;
-
-            Process.GetProcessById(StationManager.CurrentProcess.Id).Kill();
+            try
+            {
+                Process.GetProcessById(StationManager.CurrentProcess.Id).Kill();
+            }
+            catch (Exception)
+            {
+                StationManager.DataStorage.DeleteProcess(StationManager.CurrentProcess);
+            }
             Refresh();
         }
 
@@ -165,9 +171,9 @@ namespace Laboratory05.ViewModel
         {
             while (!_token.IsCancellationRequested)
             {
-                Thread.Sleep(10000);
+                Thread.Sleep(2000);
                 var processes = new List<SystemProcess>(StationManager.DataStorage.ProcessList);
-                LoaderManager.Instance.ShowLoader();
+                //LoaderManager.Instance.ShowLoader();
 
                 foreach (SystemProcess process in processes)
                 {
@@ -187,10 +193,10 @@ namespace Laboratory05.ViewModel
                 if (_token.IsCancellationRequested)
                     break;
 
-                Processes = new ObservableCollection<SystemProcess>(processes);
-                StationManager.DataStorage.ProcessList = processes;
-               
-                LoaderManager.Instance.HideLoader();
+               StationManager.DataStorage.ProcessList = processes;
+               Refresh();
+
+                //LoaderManager.Instance.HideLoader();
             }
         }
 
@@ -198,9 +204,9 @@ namespace Laboratory05.ViewModel
         {
             while (!_token.IsCancellationRequested)
             {
-                Thread.Sleep(30000);
+                Thread.Sleep(5000);
                 var processes = new List<SystemProcess>();
-                LoaderManager.Instance.ShowLoader();
+                //LoaderManager.Instance.ShowLoader();
 
                 foreach (Process process in Process.GetProcesses())
                 {
@@ -210,20 +216,21 @@ namespace Laboratory05.ViewModel
                     else
                     {
                         sysProcess.Refresh(process);
-                        processes.Add(sysProcess);
+                        if(sysProcess.IsActive)
+                            processes.Add(sysProcess);
                     }
+
                     if (_token.IsCancellationRequested)
                         break;
                 }
 
                 if (_token.IsCancellationRequested)
                     break;
-                Processes = new ObservableCollection<SystemProcess>(processes);
-                StationManager.DataStorage.ProcessList = processes;
-                if (_token.IsCancellationRequested)
-                    break;
 
-                LoaderManager.Instance.HideLoader();
+                StationManager.DataStorage.ProcessList = processes;
+                Refresh();
+                
+                //LoaderManager.Instance.HideLoader();
             }
         }
 
